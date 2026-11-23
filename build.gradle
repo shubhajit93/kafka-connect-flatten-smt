@@ -1,0 +1,49 @@
+plugins {
+    id 'java'
+}
+
+group = 'io.github.shubhajit93'
+version = '1.0.0'
+
+repositories {
+    mavenCentral()
+}
+
+def kafkaVersion = '3.9.1'
+
+dependencies {
+    // Provided by the Kafka Connect worker at runtime, so it is not bundled into the plugin jar.
+    compileOnly "org.apache.kafka:connect-api:${kafkaVersion}"
+
+    testImplementation "org.apache.kafka:connect-api:${kafkaVersion}"
+    testImplementation platform('org.junit:junit-bom:5.11.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.assertj:assertj-core:3.26.3'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+// Compile for Java 11, the oldest JVM supported by Kafka Connect 3.x workers.
+tasks.withType(JavaCompile).configureEach {
+    options.release = 11
+    options.compilerArgs << '-Xlint:all' << '-Werror'
+}
+
+jar {
+    manifest {
+        attributes('Implementation-Title': project.name, 'Implementation-Version': project.version)
+    }
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+        exceptionFormat 'full'
+    }
+}

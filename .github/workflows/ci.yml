@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - run: ./gradlew build --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: plugin
+          path: build/libs/*.jar
+
+  e2e:
+    name: End-to-end in a real Connect worker
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: plugin
+          path: build/libs
+      - name: Start Kafka, Kafka Connect and PostgreSQL
+        run: docker compose up -d --wait
+      - name: Run demo
+        run: ./demo/run-demo.sh
+      - name: Connect logs
+        if: failure()
+        run: docker compose logs connect --tail 300
+      - name: Stop
+        if: always()
+        run: docker compose down -v
+
+  release:
+    name: Publish release
+    needs: e2e
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: plugin
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: '*.jar'
+          generate_release_notes: true
