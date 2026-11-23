@@ -74,11 +74,11 @@ docker compose up -d --wait
 ```
 
 ```text
- id | customer_name | customer_address_city | customer_address_zip |     tags     |                    items                     | total
-----+---------------+-----------------------+----------------------+--------------+----------------------------------------------+-------
+ id | customer_name | customer_address_city | customer_address_zip |     tags     |                     items                     | total
+----+---------------+-----------------------+----------------------+--------------+-----------------------------------------------+-------
   1 | Ana           | Dhaka                 | 1212                 | new,priority | [{"sku":"A-1","qty":2},{"sku":"B-7","qty":1}] |  59.5
-  2 | Ben           |                       |                      |              | [{"sku":"C-3","qty":5}]                      |    20
-  3 | Chen          | Chattogram            |                      |              | []                                           |     0
+  2 | Ben           |                       |                      |              | [{"sku":"C-3","qty":5}]                       |    20
+  3 | Chen          | Chattogram            |                      |              | []                                            |     0
 ```
 
 CI runs this same demo against a real Connect worker on every push.
